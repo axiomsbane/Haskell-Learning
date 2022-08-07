@@ -32,3 +32,12 @@ sumDigits (x:xs) = sum (toDigits x) + sumDigits xs
 --Exercise 4
 validate :: Integer -> Bool
 validate num = 0 == sumDigits (doubleEveryOther (toDigits num)) `mod` 10
+
+-- Excercise 5
+
+type Peg = String
+type Move = (Peg, Peg)
+hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
+hanoi n a b c 
+  | n <= 0 = []
+  | otherwise = hanoi (n-1) a c b ++ ((a, c) : hanoi (n-1) b a c) 
