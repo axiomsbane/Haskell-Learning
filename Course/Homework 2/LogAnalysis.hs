@@ -3,6 +3,7 @@ module LogAnalysis where
 import Log
 import Data.Char
 
+-- Excercise 1 done 
 splitBySpace :: String -> String -> [String]
 splitBySpace [] acc = [reverse acc]
 splitBySpace (x:xs) acc
@@ -36,4 +37,5 @@ parseMessageUtil (x:y:z:zs)
   | (x == "E") && isNumberr y && isNumberr z && (toNum y >= 1 && toNum y <= 100) = LogMessage (Error (toNum y)) (toNum z) (unwords zs)
   | otherwise = Unknown (unwords (x:y:z:zs))
 
------ Excercise 1 done 
+parse :: String -> [LogMessage]
+parse txt = map parseMessage (lines txt)
