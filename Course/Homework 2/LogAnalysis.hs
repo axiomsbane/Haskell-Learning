@@ -59,3 +59,8 @@ build = acc Leaf
   where 
     acc curTree [] = curTree
     acc curTree (x:xs) = acc (insert x curTree) xs
+
+-- Excercise 4 inOrder traversal
+inOrder :: MessageTree -> [LogMessage]
+inOrder Leaf = []
+inOrder (Node lTree logMsg rTree) = concat [inOrder lTree, [logMsg], inOrder rTree]
