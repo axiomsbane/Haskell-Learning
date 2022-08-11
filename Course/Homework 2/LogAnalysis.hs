@@ -39,3 +39,23 @@ parseMessageUtil (x:y:z:zs)
 
 parse :: String -> [LogMessage]
 parse txt = map parseMessage (lines txt)
+
+--Exercise 2
+getTimeStamp :: LogMessage -> TimeStamp
+getTimeStamp (LogMessage _ tmpStmp _) = tmpStmp
+getTimeStamp (Unknown _) = 0
+
+insert :: LogMessage -> MessageTree -> MessageTree 
+insert (Unknown _) mTree = mTree
+insert logMsg Leaf = Node Leaf logMsg Leaf
+insert logMsg (Node mTreeLeft mLogMsg mTreeRight)
+  | getTimeStamp logMsg >= getTimeStamp mLogMsg = Node mTreeLeft mLogMsg (insert logMsg mTreeRight)
+  | otherwise = Node (insert logMsg mTreeLeft) mLogMsg mTreeRight
+
+
+--Exercise 3 
+build :: [LogMessage] -> MessageTree
+build = acc Leaf
+  where 
+    acc curTree [] = curTree
+    acc curTree (x:xs) = acc (insert x curTree) xs
