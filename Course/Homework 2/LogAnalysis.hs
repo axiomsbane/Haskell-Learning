@@ -64,3 +64,22 @@ build = acc Leaf
 inOrder :: MessageTree -> [LogMessage]
 inOrder Leaf = []
 inOrder (Node lTree logMsg rTree) = concat [inOrder lTree, [logMsg], inOrder rTree]
+
+-- Exercise 5 : need to get all the log messages that have severity level >= 50
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong  = whatWentWrongUtil . inOrder . build 
+
+isErrorMoreThan50 :: LogMessage -> Bool
+isErrorMoreThan50  (LogMessage (Error level) _ _) = level >= 50
+isErrorMoreThan50 (LogMessage _ _ _) = False
+isErrorMoreThan50 (Unknown _) = False
+
+getStrMsg :: LogMessage -> String
+getStrMsg (LogMessage _ _ str) = str
+getStrMsg (Unknown str) = str
+
+whatWentWrongUtil :: [LogMessage] -> [String]
+whatWentWrongUtil [] = []
+whatWentWrongUtil (x:xs)
+  | isErrorMoreThan50 x = getStrMsg x : whatWentWrongUtil xs
+  | otherwise = whatWentWrongUtil xs
