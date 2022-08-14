@@ -39,8 +39,6 @@ getEveryLevel idx maxCnt cnts
   | otherwise = map (\x -> if idx <= x then '*' else ' ') cnts : getEveryLevel (idx + 1) maxCnt cnts
 
 histogram :: [Int] -> String
-histogram lis = intercalate "\n" (reverse finLis) ++ constStr
+histogram lis = intercalate "\n" (reverse $ getEveryLevel 1 (maximum ctrList) ctrList) ++ constStr
   where 
-    finLis = getEveryLevel 1 (maximum ctrList) ctrList 
-      where 
-        ctrList = mapToCounts lis
+    ctrList = mapToCounts lis
