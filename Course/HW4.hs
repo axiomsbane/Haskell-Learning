@@ -27,3 +27,11 @@ xor = foldr (\x y -> (x || y) && not (x && y)) False
 
 map' :: (a -> b) -> [a] -> [b]
 map' f = foldr ((:) . f) [] 
+
+flrt :: (Integral c, Integral a) => a -> c
+flrt = floor . sqrt . fromIntegral
+
+sieveSundaram :: Integer -> [Integer]
+sieveSundaram n = map (\a -> 2 * a + 1) $ filter (`notElem` lis) [1..n]
+            where lis = [x + y + 2*x*y | x <- [1..(flrt $ div n 2)], y <- [1..(flrt $ div n 2)], x <= y]
+
