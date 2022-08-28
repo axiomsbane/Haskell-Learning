@@ -1,7 +1,9 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Calc where
 import ExprT
 import Parser (parseExp)
-
+import qualified Data.Map as M
 
 newtype MinMax = MinMax Integer deriving (Eq, Show)
 newtype Mod7 = Mod7 Integer deriving (Eq, Show)
@@ -64,3 +66,36 @@ instance Expr Mod7 where
 -- testBool = testExp :: Maybe Bool
 -- testMM = testExp :: Maybe MinMax
 -- testSat = testExp :: Maybe Mod7
+
+{-
+The below is to create a calculator with
+the feature to store expressions with variables
+VarExprT will be an instance of both Expr & HasVars
+-}
+
+class HasVars a where
+  var :: String -> a
+
+-- 
+data VarExprT = VarLit Integer
+              | VarAdd VarExprT VarExprT
+              | VarMul VarExprT VarExprT
+              | Var String
+              deriving (Show, Eq)
+
+instance HasVars VarExprT where
+  var = Var
+
+instance Expr VarExprT where
+  lit = VarLit
+  add = VarAdd
+  mul = VarMul
+
+instance HasVars (M.Map String Integer -> Maybe Integer) where
+  var str = \mMap -> M.lookup str mMap
+
+instance Expr (M.Map String Integer -> Maybe Integer) where
+  lit x = \mMap -> Just x
+  add f1 f2 = f1
+
+{-My brain is hurting now-}
