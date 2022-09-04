@@ -4,6 +4,7 @@ module Calc where
 import ExprT
 import Parser (parseExp)
 import qualified Data.Map as M
+import Data.Maybe
 
 newtype MinMax = MinMax Integer deriving (Eq, Show)
 newtype Mod7 = Mod7 Integer deriving (Eq, Show)
@@ -76,7 +77,6 @@ VarExprT will be an instance of both Expr & HasVars
 class HasVars a where
   var :: String -> a
 
--- 
 data VarExprT = VarLit Integer
               | VarAdd VarExprT VarExprT
               | VarMul VarExprT VarExprT
@@ -96,6 +96,16 @@ instance HasVars (M.Map String Integer -> Maybe Integer) where
 
 instance Expr (M.Map String Integer -> Maybe Integer) where
   lit x = \mMap -> Just x
-  add f1 f2 = f1
+  add f1 f2 = \mMap -> if isNothing (f1 mMap) || isNothing (f2 mMap)
+                        then 
+                          Nothing
+                        else
+                          Just (fromJust (f1 mMap) + fromJust (f2 mMap))
+  mul f1 f2 = \mMap -> if isNothing (f1 mMap) || isNothing (f2 mMap)
+                        then 
+                          Nothing
+                        else
+                          Just (fromJust (f1 mMap) * fromJust (f2 mMap))
 
-{-My brain is hurting now-}
+withVars :: [(String, Integer)] -> (M.Map String Integer -> Maybe Integer)-> Maybe Integer
+withVars vs exp = exp $ M.fromList vs
