@@ -25,7 +25,6 @@ instance Sized b => Sized (a,b) where
   size = size . snd
 
 instance Semigroup Size where
-    (<>) :: Size -> Size -> Size
     (<>) = (+)
 
 instance Monoid Size where
