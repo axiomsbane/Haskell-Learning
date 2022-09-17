@@ -3,6 +3,8 @@
 module JoinList where
 
 import Sized
+import Scrabble
+
 
 data JoinList m a = Empty
   | Single m a
@@ -112,4 +114,5 @@ takeJHelp sz appu@(Append m joinList1 joinList2)
     minChoose = min sz szLeft
 
 
-
+scoreLine :: String -> JoinList Score String
+scoreLine str = Single (scoreString str) str
