@@ -69,3 +69,47 @@ instance Sized Product where
 
 checker :: Int -> Bool
 checker i = (indexJ i jls) == (jlToList jls !!? i)
+
+dropJ :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList (b, Size) a
+dropJ val joinList = dropJHelp val (cacheSizeTree joinList)
+
+
+dropJHelp :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
+dropJHelp sz Empty = Empty
+dropJHelp sz joinList
+  | sz <= 0 = joinList
+  | sz >= getSize (size $ tag joinList) = Empty
+dropJHelp sz single@(Single m a) 
+  | sz >= getSize (size m) = Empty
+  | otherwise = single
+dropJHelp sz (Append m joinList1 joinList2)
+  | sz < szCur = (dropJHelp minChoose joinList1) +++ dropJHelp (sz - minChoose) joinList2
+  | otherwise = Empty   
+  where
+    szLeft = getSize $ size $ tag joinList1
+    szCur = getSize $ size m
+    minChoose = min sz szLeft
+
+
+takeJ :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList (b, Size) a
+takeJ val tree = takeJHelp val (cacheSizeTree tree) 
+
+
+takeJHelp :: (Sized b, Monoid b) => Int -> JoinList b a -> JoinList b a
+takeJHelp sz Empty = Empty
+takeJHelp sz joinList
+  | sz <= 0 = Empty
+  | sz >= getSize (size $ tag joinList) = joinList
+takeJHelp sz single@(Single m a) 
+  | sz >= getSize (size m) = single
+  | otherwise = Empty
+takeJHelp sz appu@(Append m joinList1 joinList2)
+  | sz < szCur = (takeJHelp minChoose joinList1) +++ takeJHelp (sz - minChoose) joinList2
+  | otherwise = appu   
+  where
+    szLeft = getSize $ size $ tag joinList1
+    szCur = getSize $ size m
+    minChoose = min sz szLeft
+
+
+
