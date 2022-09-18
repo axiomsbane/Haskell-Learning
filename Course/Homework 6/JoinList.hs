@@ -139,7 +139,7 @@ instance Buffer (JoinList (Score, Size) String) where
   -- fromString str    = Single (scoreString str, 1) str
   fromString str = mconcat $ generateSingles (lines str)
   line idx joinList = indexJHelp idx joinList
-  replaceLine n str joinList = takeJHelp (n) joinList +++ fromString  str +++ dropJHelp (n+1) joinList
+  replaceLine n str joinList = takeJHelp (n) joinList +++ fromString str +++ dropJHelp (n+1) joinList
   numLines joinList = getSize $ size $ tag joinList
   value = getScore . fst . tag 
 
