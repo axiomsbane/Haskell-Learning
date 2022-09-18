@@ -11,7 +11,7 @@ scores = [('a',1),('b',3),('c',3),('d',2),('e',1),('f',4),('g',2),('h',4),('i',1
 scoreMap :: M.Map Char Int
 scoreMap = M.fromList scores
 
-newtype Score = Score Int
+newtype Score = Score {getScore :: Int}
   deriving (Eq, Ord, Show, Num)
 
 instance Semigroup Score where

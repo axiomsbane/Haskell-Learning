@@ -1,10 +1,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE InstanceSigs #-}
 module JoinList where
 
 import Sized
 import Scrabble
-
+import Buffer
+import Editor (runEditor, editor)
 
 data JoinList m a = Empty
   | Single m a
@@ -17,6 +19,8 @@ tag (Single m _) = m
 tag (Append m _ _)  = m
 
 (+++) :: Monoid m => JoinList m a -> JoinList m a -> JoinList m a
+(+++) Empty joinListB = joinListB
+(+++) joinListA Empty = joinListA
 (+++) joinListA joinListB = Append (tag joinListA <> tag joinListB) joinListA joinListB 
 
 
@@ -116,3 +120,31 @@ takeJHelp sz appu@(Append m joinList1 joinList2)
 
 scoreLine :: String -> JoinList Score String
 scoreLine str = Single (scoreString str) str
+
+generateSingles :: [String] -> [JoinList (Score, Size) String]
+generateSingles = map (\x -> Single (scoreString x, Size 1) x)
+
+instance Semigroup (JoinList (Score, Size) String) where
+  (<>) = (+++)
+instance Monoid (JoinList (Score, Size) String) where
+  mempty = Empty
+
+instance Buffer (JoinList (Score, Size) String) where
+  toString Empty = ""
+  toString (Single _ str) = str
+  toString (Append _ j1 j2) = toString j1 ++ toString j2
+  --fromString str = Single (scoreString str, 1) str
+  -- fromString []     = Empty
+  -- fromString (x:[]) = Single (score x, 1) (x:[])
+  -- fromString str    = Single (scoreString str, 1) str
+  fromString str = mconcat $ generateSingles (lines str)
+  line idx joinList = indexJHelp idx joinList
+  replaceLine n str joinList = takeJHelp (n) joinList +++ fromString  str +++ dropJHelp (n+1) joinList
+  numLines joinList = getSize $ size $ tag joinList
+  value = getScore . fst . tag 
+
+
+main = runEditor editor (Single (Score 0, Size 0) "" :: JoinList (Score, Size) String)
+
+  
+
