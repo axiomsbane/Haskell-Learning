@@ -1,7 +1,8 @@
 {-# LANGUAGE InstanceSigs #-}
+
 {- CIS 194 HW 10
    due Monday, 1 April
--}
+-} 
 
 module AParser where
 
@@ -47,13 +48,13 @@ Just ('x',"yz")
 
 -- For convenience, we've also provided a parser for positive
 -- integers.
-posInt :: Parser Integer
-posInt = Parser f
+posInt :: (Char -> Bool) -> Parser String
+posInt fn = Parser f
   where
     f xs
       | null ns   = Nothing
-      | otherwise = Just (read ns, rest)
-      where (ns, rest) = span isDigit xs
+      | otherwise = Just (ns, rest)
+      where (ns, rest) = span fn xs
 
 ------------------------------------------------------------
 -- Your code goes below here
@@ -74,12 +75,49 @@ instance Applicative Parser where
 
   (<*>) :: Parser (a -> b) -> Parser a -> Parser b
   (<*>) (Parser fnF) (Parser fnA) = Parser createdFunc 
-    where createdFunc = \str -> case (fnF str, fnA str) of
-                                (_, Nothing)            -> Nothing
-                                (Nothing, _ )           -> Nothing
-                                (Just resF, Just resA)  -> Just $ first (fst resF) resA
+    where createdFunc = \str -> case (fnA str) of
+                                  (Nothing)  -> Nothing
+                                  (Just res) -> case (fnF (snd res)) of
+                                                  (Nothing)  -> Nothing
+                                                  (Just fin) -> Just ((fst fin) (fst res), snd fin)
   
--- fnn = (*2)
+fnn = (*2)
+
+kuku :: Parser (a -> a)
+kuku = pure id
+
+pureStarV = pure id <*> posInt
+
+-- idd str = ((runParser pureStarV) str) == ((runParser posInt) str)
 
 -- actualFunc :: String -> Maybe (Int -> Int, String)
 -- actualFunc _ = Just (fnn, "")
+
+pureVal :: Parser Int
+pureVal = pure 2
+
+homoLeft = pure fnn <*> pureVal
+
+homoRight :: Parser Int
+homoRight = pure (fnn 2)
+
+homoMorphism str = ((runParser homoLeft) str) == ((runParser homoRight) str)
+
+-- lefFmap = fmap (2*) posInt 
+-- rigFmap = pure (2*) <*> posInt
+
+-- checkFmap str = ((runParser lefFmap) str) == ((runParser rigFmap) str)
+
+
+
+type Name = String
+data Employee = Emp { name :: Name, phone :: String }
+  deriving (Show)
+
+parseName :: Parser Name
+parseName = posInt (not . isDigit)
+
+parsePhone :: Parser String
+parsePhone = posInt isDigit
+
+collecto = Emp <$> parseName <*> parsePhone
