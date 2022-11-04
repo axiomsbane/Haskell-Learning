@@ -7,7 +7,7 @@
 module AParser where
 
 import           Control.Applicative
-
+import Test.QuickCheck
 import           Data.Char
 
 -- A parser for a value of type a is a function which takes a String
