@@ -1,5 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 
+
 {- CIS 194 HW 10
    due Monday, 1 April
 -} 
@@ -56,6 +57,16 @@ posInt fn = Parser f
       | otherwise = Just (ns, rest)
       where (ns, rest) = span fn xs
 
+
+posUse :: Parser Int
+posUse = Parser f
+  where
+    f xs
+      | null ns   = Nothing
+      | otherwise = Just (read ns, rest)
+      where (ns, rest) = span isDigit xs
+
+
 ------------------------------------------------------------
 -- Your code goes below here
 ------------------------------------------------------------
@@ -71,27 +82,22 @@ instance Functor Parser where
 
 instance Applicative Parser where
   pure :: a -> Parser a
-  pure x = Parser (\_ -> Just (x, ""))
+  pure x = Parser (\str -> Just (x, str))
 
   (<*>) :: Parser (a -> b) -> Parser a -> Parser b
-  (<*>) (Parser fnF) (Parser fnA) = Parser createdFunc 
-    where createdFunc = \str -> case (fnA str) of
-                                  (Nothing)  -> Nothing
-                                  (Just res) -> case (fnF (snd res)) of
-                                                  (Nothing)  -> Nothing
-                                                  (Just fin) -> Just ((fst fin) (fst res), snd fin)
-  
+  (Parser fnF) <*> (Parser fnA) = Parser createdFunc 
+    where createdFunc str = case fnF str of
+            Nothing          -> Nothing
+            (Just (f, stur)) -> case fnA stur of
+                                  Nothing           -> Nothing
+                                  (Just (res, rem)) -> Just (f res, rem) 
+
 fnn = (*2)
 
 kuku :: Parser (a -> a)
 kuku = pure id
 
 pureStarV = pure id <*> posInt
-
--- idd str = ((runParser pureStarV) str) == ((runParser posInt) str)
-
--- actualFunc :: String -> Maybe (Int -> Int, String)
--- actualFunc _ = Just (fnn, "")
 
 pureVal :: Parser Int
 pureVal = pure 2
@@ -100,15 +106,6 @@ homoLeft = pure fnn <*> pureVal
 
 homoRight :: Parser Int
 homoRight = pure (fnn 2)
-
-homoMorphism str = ((runParser homoLeft) str) == ((runParser homoRight) str)
-
--- lefFmap = fmap (2*) posInt 
--- rigFmap = pure (2*) <*> posInt
-
--- checkFmap str = ((runParser lefFmap) str) == ((runParser rigFmap) str)
-
-
 
 type Name = String
 data Employee = Emp { name :: Name, phone :: String }
@@ -121,3 +118,19 @@ parsePhone :: Parser String
 parsePhone = posInt isDigit
 
 collecto = Emp <$> parseName <*> parsePhone
+
+abParser :: Parser (Char, Char)
+abParser = pure (\x y -> (x, y)) <*> char 'a' <*> char 'b'
+
+abParser_ :: Parser ()
+abParser_ = (\_ _ -> ()) <$> char 'b' <*> char 'a'
+
+intPair :: Parser [Int]
+intPair = (pure (\x y z -> [x, z])) <*> posUse <*>  (char ' ') <*> posUse
+
+
+
+
+
+
+
