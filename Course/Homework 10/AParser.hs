@@ -128,6 +128,17 @@ abParser_ = (\_ _ -> ()) <$> char 'b' <*> char 'a'
 intPair :: Parser [Int]
 intPair = (pure (\x y z -> [x, z])) <*> posUse <*>  (char ' ') <*> posUse
 
+instance Alternative Parser where 
+  empty :: Parser a
+  empty = Parser (const Nothing)
+
+  (<|>) :: Parser a -> Parser a -> Parser a
+  (Parser p1) <|> (Parser p2) = Parser createdFunc
+    where createdFunc str = p1 str <|> p2 str
+
+intOrUppercase :: Parser ()
+intOrUppercase = (const ()) <$> ((show <$> posUse) <|> ((\c -> [c]) <$> satisfy isUpper))
+
 
 
 
