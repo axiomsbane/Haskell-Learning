@@ -137,7 +137,7 @@ instance Alternative Parser where
     where createdFunc str = p1 str <|> p2 str
 
 intOrUppercase :: Parser ()
-intOrUppercase = (const ()) <$> ((show <$> posUse) <|> ((\c -> [c]) <$> satisfy isUpper))
+intOrUppercase = (const ()) <$> ((show <$> posUse) <|> (show <$> satisfy isUpper))
 
 
 
