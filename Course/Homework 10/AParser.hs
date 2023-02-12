@@ -1,14 +1,13 @@
 {-# LANGUAGE InstanceSigs #-}
-
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 
 {- CIS 194 HW 10
    due Monday, 1 April
 -} 
 
-module AParser where
+module AParser (Parser, runParser, satisfy, char, posInt) where
 
 import           Control.Applicative
-import Test.QuickCheck
 import           Data.Char
 
 -- A parser for a value of type a is a function which takes a String
@@ -49,17 +48,8 @@ Just ('x',"yz")
 
 -- For convenience, we've also provided a parser for positive
 -- integers.
-posInt :: (Char -> Bool) -> Parser String
-posInt fn = Parser f
-  where
-    f xs
-      | null ns   = Nothing
-      | otherwise = Just (ns, rest)
-      where (ns, rest) = span fn xs
-
-
-posUse :: Parser Int
-posUse = Parser f
+posInt :: Parser Int
+posInt = Parser f
   where
     f xs
       | null ns   = Nothing
@@ -107,17 +97,17 @@ homoLeft = pure fnn <*> pureVal
 homoRight :: Parser Int
 homoRight = pure (fnn 2)
 
-type Name = String
-data Employee = Emp { name :: Name, phone :: String }
-  deriving (Show)
+-- type Name = String
+-- data Employee = Emp { name :: Name, phone :: String }
+--   deriving (Show)
 
-parseName :: Parser Name
-parseName = posInt (not . isDigit)
+-- parseName :: Parser Name
+-- parseName = posInt (not . isDigit)
 
-parsePhone :: Parser String
-parsePhone = posInt isDigit
+-- parsePhone :: Parser String
+-- parsePhone = posInt isDigit
 
-collecto = Emp <$> parseName <*> parsePhone
+-- collecto = Emp <$> parseName <*> parsePhone
 
 abParser :: Parser (Char, Char)
 abParser = pure (\x y -> (x, y)) <*> char 'a' <*> char 'b'
@@ -126,18 +116,55 @@ abParser_ :: Parser ()
 abParser_ = (\_ _ -> ()) <$> char 'b' <*> char 'a'
 
 intPair :: Parser [Int]
-intPair = (pure (\x y z -> [x, z])) <*> posUse <*>  (char ' ') <*> posUse
+intPair = (pure (\x y z -> [x, z])) <*> posInt <*>  (char ' ') <*> posInt
 
 instance Alternative Parser where 
-  empty :: Parser a
+  empty :: Parser a 
   empty = Parser (const Nothing)
 
   (<|>) :: Parser a -> Parser a -> Parser a
   (Parser p1) <|> (Parser p2) = Parser createdFunc
     where createdFunc str = p1 str <|> p2 str
 
+
+-------------------------------------------------------------------------
+------------------Miscellaneous stuff below------------------------------
+-------------------------------------------------------------------------
+
 intOrUppercase :: Parser ()
-intOrUppercase = (const ()) <$> ((show <$> posUse) <|> (show <$> satisfy isUpper))
+intOrUppercase = (const ()) <$> ((show <$> posInt) <|> (show <$> satisfy isUpper))
+
+(.+) :: (Applicative f, Num c) => f c -> f c -> f c
+(.+) = liftA2 (+)
+(.*) :: (Applicative f, Num c) => f c -> f c -> f c
+(.*) = liftA2 (*)
+
+-- names  = ["Joe", "Sara", "Mae"]
+-- phones = ["555-5555", "123-456-7890", "555-4321"]
+
+-- employees2 = getZipList $ Emp <$> ZipList names <*> ZipList phones
+
+
+pair :: Applicative f => f a -> f b -> f (a,b)
+pair fa fb = (\x y -> (x,y)) <$> fa <*> fb
+
+
+replicateA :: Functor f => Int -> f a -> f [a]
+replicateA rep = fmap (replicate rep)
+
+sequenceA1  :: Applicative f => [f a] -> f [a]
+sequenceA1 = foldr1 (liftA2 (++)) . makeItArr
+
+makeItArr :: Functor f => [f a] -> [f [a]]
+makeItArr = map (fmap (replicate 1)) 
+
+mapA :: Applicative f => (a -> f b) -> ([a] -> f [b])
+mapA fn = sequenceA1 . map fn
+
+-------------------------------------------------------------------------
+------------------Miscellaneous stuff above------------------------------
+-------------------------------------------------------------------------
+
 
 
 
